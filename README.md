@@ -66,3 +66,7 @@ users
 
 A `sermon_event` is a single service: one sermon preached at one church on one
 date. All other fields are optional.
+
+# Online Demo
+
+You can find a working demo of this software at https://sermontracker.pastordaniel.net/ (Log in using your google account)
