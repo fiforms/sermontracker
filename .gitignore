@@ -15,3 +15,4 @@ server/*.db-wal
 
 # Claude Code project settings (personal tooling config)
 .claude/settings.json
+sermontracker.tar.gz
