@@ -195,6 +195,14 @@ server {
         return 302 /outpost.goauthentik.io/start?rd=$scheme://$http_host$request_uri;
     }
 
+    # PWA assets must be publicly accessible - browsers fetch these without
+    # sending auth cookies, so they must bypass Authentik.
+    location ~* ^/(manifest\.webmanifest|sw\.js|registerSW\.js|workbox-.*\.js|icon-.*\.png)$ {
+        proxy_pass http://sermontracker:3000;
+        proxy_set_header Host            $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
     location / {
         # Verify the session with Authentik before every request
         auth_request /outpost.goauthentik.io/auth/nginx;
