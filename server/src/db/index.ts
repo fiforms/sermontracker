@@ -2,6 +2,8 @@ import { DatabaseSync } from 'node:sqlite';
 import { drizzle } from 'drizzle-orm/sqlite-proxy';
 import { migrate } from 'drizzle-orm/sqlite-proxy/migrator';
 import * as schema from './schema.js';
+import { users } from './schema.js';
+import { eq } from 'drizzle-orm';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -37,7 +39,14 @@ await migrate(db, async (queries) => {
   for (const q of queries) client.exec(q);
 }, { migrationsFolder });
 
-// Seed the default single user directly via the raw client.
+// Seed the dev fallback user (id=1). Used when AUTH_MODE != 'proxy'.
 client.exec(`INSERT OR IGNORE INTO users (id, name, email) VALUES (1, 'Pastor', 'pastor@local')`);
 
 export const DEFAULT_USER_ID = 1;
+
+export async function findOrCreateUser(email: string, name: string): Promise<number> {
+  const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
+  if (existing[0]) return existing[0].id;
+  const [row] = await db.insert(users).values({ email, name }).returning({ id: users.id });
+  return row.id;
+}

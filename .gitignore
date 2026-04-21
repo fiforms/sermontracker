@@ -1,5 +1,9 @@
 node_modules
 
+# Local environment overrides (copy from .env.example)
+.env
+server/.env
+
 # Build output
 client/dist
 server/dist

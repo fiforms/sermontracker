@@ -15,3 +15,8 @@ server/*.db-wal
 .git
 .claude
 *.md
+
+# Local env overrides — production config comes from docker-compose environment:
+.env
+server/.env
+server/.env.example

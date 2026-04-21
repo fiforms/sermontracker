@@ -9,13 +9,15 @@ import { dirname, join, extname } from 'node:path';
 import churches from './routes/churches.js';
 import sermons from './routes/sermons.js';
 import events from './routes/events.js';
+import { authMiddleware } from './middleware/auth.js';
+import type { AppVariables } from './types.js';
 
 // DB init — runs migrations and seeds default user on import
 import './db/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const app = new Hono();
+const app = new Hono<{ Variables: AppVariables }>();
 
 app.use('*', logger());
 
@@ -23,6 +25,8 @@ app.use('*', logger());
 if (process.env.NODE_ENV !== 'production') {
   app.use('/api/*', cors({ origin: 'http://localhost:5173' }));
 }
+
+app.use('/api/*', authMiddleware);
 
 app.route('/api/churches', churches);
 app.route('/api/sermons', sermons);

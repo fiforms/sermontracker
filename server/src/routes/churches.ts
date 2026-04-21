@@ -1,23 +1,26 @@
 import { Hono } from 'hono';
-import { db, DEFAULT_USER_ID } from '../db/index.js';
+import { db } from '../db/index.js';
 import { churches } from '../db/schema.js';
 import { eq, and } from 'drizzle-orm';
+import type { AppVariables } from '../types.js';
 
-const app = new Hono();
+const app = new Hono<{ Variables: AppVariables }>();
 
 app.get('/', async (c) => {
-  const rows = await db.select().from(churches).where(eq(churches.userId, DEFAULT_USER_ID));
+  const userId = c.get('userId');
+  const rows = await db.select().from(churches).where(eq(churches.userId, userId));
   return c.json(rows);
 });
 
 app.post('/', async (c) => {
+  const userId = c.get('userId');
   const body = await c.req.json<{ name: string; city?: string; state?: string; country?: string }>();
   if (!body.name?.trim()) return c.json({ error: 'name is required' }, 400);
 
   const [row] = await db
     .insert(churches)
     .values({
-      userId: DEFAULT_USER_ID,
+      userId,
       name: body.name.trim(),
       city: body.city?.trim() || null,
       state: body.state?.trim() || null,
@@ -28,6 +31,7 @@ app.post('/', async (c) => {
 });
 
 app.put('/:id', async (c) => {
+  const userId = c.get('userId');
   const id = Number(c.req.param('id'));
   const body = await c.req.json<{ name?: string; city?: string; state?: string; country?: string }>();
 
@@ -39,7 +43,7 @@ app.put('/:id', async (c) => {
       state: body.state?.trim() || null,
       country: body.country?.trim() || null,
     })
-    .where(and(eq(churches.id, id), eq(churches.userId, DEFAULT_USER_ID)))
+    .where(and(eq(churches.id, id), eq(churches.userId, userId)))
     .returning();
 
   if (!row) return c.json({ error: 'not found' }, 404);
@@ -47,8 +51,9 @@ app.put('/:id', async (c) => {
 });
 
 app.delete('/:id', async (c) => {
+  const userId = c.get('userId');
   const id = Number(c.req.param('id'));
-  await db.delete(churches).where(and(eq(churches.id, id), eq(churches.userId, DEFAULT_USER_ID)));
+  await db.delete(churches).where(and(eq(churches.id, id), eq(churches.userId, userId)));
   return c.json({ ok: true });
 });
 
