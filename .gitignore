@@ -1,0 +1,12 @@
+node_modules
+
+# Build output
+client/dist
+
+# SQLite database (runtime data, not source)
+server/*.db
+server/*.db-shm
+server/*.db-wal
+
+# Claude Code project settings (personal tooling config)
+.claude/settings.json
