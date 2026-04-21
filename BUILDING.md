@@ -141,6 +141,7 @@ docker run -d \
 | `DATABASE_PATH` | `/data/sermontracker.db` | Path to the SQLite database file |
 | `NODE_ENV` | — | Set to `production` to disable development CORS headers |
 | `AUTH_MODE` | — | Set to `proxy` to enable Authentik header auth (see below) |
+| `APP_PORTAL_URL` | — | If set, shows an **App List / Logout** button on the profile page linking to this URL. Intended for an Authentik user portal or app-switcher page so users can log out or switch apps. |
 
 ---
 

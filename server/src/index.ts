@@ -9,6 +9,7 @@ import { dirname, join, extname } from 'node:path';
 import churches from './routes/churches.js';
 import sermons from './routes/sermons.js';
 import events from './routes/events.js';
+import profile from './routes/profile.js';
 import { authMiddleware } from './middleware/auth.js';
 import type { AppVariables } from './types.js';
 
@@ -31,6 +32,7 @@ app.use('/api/*', authMiddleware);
 app.route('/api/churches', churches);
 app.route('/api/sermons', sermons);
 app.route('/api/events', events);
+app.route('/api/profile', profile);
 app.get('/health', (c) => c.json({ ok: true }));
 
 // Static file serving for production Docker.

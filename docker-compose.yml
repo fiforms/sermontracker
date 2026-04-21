@@ -12,6 +12,9 @@ services:
       - PORT=3000
       - DATABASE_PATH=/data/sermontracker.db
       - AUTH_MODE=proxy
+      # Optional: show an "App List / Logout" button on the profile page.
+      # Set to your Authentik user profile or app portal URL.
+      # - APP_PORTAL_URL=https://auth.example.com/if/user/
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
       interval: 30s

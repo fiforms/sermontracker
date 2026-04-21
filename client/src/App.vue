@@ -1,7 +1,10 @@
 <template>
   <div id="app-root">
     <header class="app-header">
-      <h1>&#9997; Sermon Tracker</h1>
+      <router-link to="/" class="header-title">&#9997; Sermon Tracker</router-link>
+      <router-link v-if="store.profile" to="/profile" class="header-profile">
+        {{ store.profile.name }}
+      </router-link>
     </header>
 
     <router-view v-slot="{ Component }">

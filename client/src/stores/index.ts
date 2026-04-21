@@ -15,6 +15,16 @@ export interface Sermon {
   description: string | null;
 }
 
+export interface Profile {
+  name: string;
+  email: string;
+  title: string | null;
+  homeChurch: string | null;
+  notes: string | null;
+  emailEditable: boolean;
+  appPortalUrl: string | null;
+}
+
 export interface SermonEvent {
   id: number;
   date: string;
@@ -42,8 +52,18 @@ export const useStore = defineStore('main', () => {
   const churches = ref<Church[]>([]);
   const sermons = ref<Sermon[]>([]);
   const events = ref<SermonEvent[]>([]);
+  const profile = ref<Profile | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
+
+  async function fetchProfile() {
+    profile.value = await api<Profile>('/profile');
+  }
+
+  async function updateProfile(data: Partial<Omit<Profile, 'emailEditable'>>) {
+    profile.value = await api<Profile>('/profile', { method: 'PUT', body: JSON.stringify(data) });
+    return profile.value;
+  }
 
   async function fetchChurches() {
     churches.value = await api<Church[]>('/churches');
@@ -132,7 +152,7 @@ export const useStore = defineStore('main', () => {
     loading.value = true;
     error.value = null;
     try {
-      await Promise.all([fetchChurches(), fetchSermons(), fetchEvents()]);
+      await Promise.all([fetchChurches(), fetchSermons(), fetchEvents(), fetchProfile()]);
     } catch (e) {
       error.value = (e as Error).message;
     } finally {
@@ -141,8 +161,8 @@ export const useStore = defineStore('main', () => {
   }
 
   return {
-    churches, sermons, events, loading, error,
-    fetchChurches, fetchSermons, fetchEvents,
+    churches, sermons, events, profile, loading, error,
+    fetchChurches, fetchSermons, fetchEvents, fetchProfile, updateProfile,
     addChurch, updateChurch, deleteChurch,
     addSermon, updateSermon, deleteSermon,
     logEvent, updateEvent, deleteEvent,
