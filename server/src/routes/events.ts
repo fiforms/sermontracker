@@ -1,9 +1,10 @@
 import { Hono } from 'hono';
-import { db, DEFAULT_USER_ID } from '../db/index.js';
+import { db } from '../db/index.js';
 import { sermonEvents, sermons, churches } from '../db/schema.js';
 import { eq, and, desc, sql } from 'drizzle-orm';
+import type { AppVariables } from '../types.js';
 
-const app = new Hono();
+const app = new Hono<{ Variables: AppVariables }>();
 
 // Flat select with explicit aliases avoids column-name collisions when
 // multiple joined tables share a column name (e.g. "id", "created_at").
@@ -63,10 +64,11 @@ function baseQuery() {
 }
 
 app.get('/', async (c) => {
+  const userId = c.get('userId');
   const sermonId = c.req.query('sermon_id') ? Number(c.req.query('sermon_id')) : undefined;
   const churchId = c.req.query('church_id') ? Number(c.req.query('church_id')) : undefined;
 
-  const conditions = [eq(sermonEvents.userId, DEFAULT_USER_ID)];
+  const conditions = [eq(sermonEvents.userId, userId)];
   if (sermonId) conditions.push(eq(sermonEvents.sermonId, sermonId));
   if (churchId) conditions.push(eq(sermonEvents.churchId, churchId));
 
@@ -75,6 +77,7 @@ app.get('/', async (c) => {
 });
 
 app.post('/', async (c) => {
+  const userId = c.get('userId');
   const body = await c.req.json<{
     sermonId: number;
     churchId: number;
@@ -92,7 +95,7 @@ app.post('/', async (c) => {
   const [inserted] = await db
     .insert(sermonEvents)
     .values({
-      userId: DEFAULT_USER_ID,
+      userId,
       sermonId: body.sermonId,
       churchId: body.churchId,
       date: body.date,
@@ -108,6 +111,7 @@ app.post('/', async (c) => {
 });
 
 app.put('/:id', async (c) => {
+  const userId = c.get('userId');
   const id = Number(c.req.param('id'));
   const body = await c.req.json<{
     sermonId?: number;
@@ -130,7 +134,7 @@ app.put('/:id', async (c) => {
       closingHymn: body.closingHymn?.trim() || null,
       notes: body.notes?.trim() || null,
     })
-    .where(and(eq(sermonEvents.id, id), eq(sermonEvents.userId, DEFAULT_USER_ID)))
+    .where(and(eq(sermonEvents.id, id), eq(sermonEvents.userId, userId)))
     .returning({ id: sermonEvents.id });
 
   if (!updated) return c.json({ error: 'not found' }, 404);
@@ -140,10 +144,11 @@ app.put('/:id', async (c) => {
 });
 
 app.delete('/:id', async (c) => {
+  const userId = c.get('userId');
   const id = Number(c.req.param('id'));
   await db
     .delete(sermonEvents)
-    .where(and(eq(sermonEvents.id, id), eq(sermonEvents.userId, DEFAULT_USER_ID)));
+    .where(and(eq(sermonEvents.id, id), eq(sermonEvents.userId, userId)));
   return c.json({ ok: true });
 });
 
