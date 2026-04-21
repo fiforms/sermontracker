@@ -2,12 +2,15 @@ import { DatabaseSync } from 'node:sqlite';
 import { drizzle } from 'drizzle-orm/sqlite-proxy';
 import { migrate } from 'drizzle-orm/sqlite-proxy/migrator';
 import * as schema from './schema.js';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const client = new DatabaseSync(join(__dirname, '../../sermontracker.db'));
+const dbPath = process.env.DATABASE_PATH ?? join(__dirname, '../../sermontracker.db');
+const migrationsFolder = join(__dirname, '../../drizzle');
+
+const client = new DatabaseSync(dbPath);
 client.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
 
 export const db = drizzle(
@@ -30,12 +33,11 @@ export const db = drizzle(
   { schema },
 );
 
-const migrationsFolder = join(__dirname, '../../drizzle');
 await migrate(db, async (queries) => {
   for (const q of queries) client.exec(q);
 }, { migrationsFolder });
 
-// Seed the default single user directly via the raw client — avoids async proxy quirks.
+// Seed the default single user directly via the raw client.
 client.exec(`INSERT OR IGNORE INTO users (id, name, email) VALUES (1, 'Pastor', 'pastor@local')`);
 
 export const DEFAULT_USER_ID = 1;

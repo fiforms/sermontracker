@@ -1,0 +1,17 @@
+# Dependencies (reinstalled inside the build)
+node_modules
+**/node_modules
+
+# Build output (rebuilt inside the build)
+client/dist
+server/dist
+
+# Runtime database — never bake data into the image
+server/*.db
+server/*.db-shm
+server/*.db-wal
+
+# Dev/tooling
+.git
+.claude
+*.md
